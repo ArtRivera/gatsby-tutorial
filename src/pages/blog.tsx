@@ -3,11 +3,18 @@ import Layout from "../components/layout";
 import { HeadFC, graphql } from "gatsby";
 import Seo from "../components/seo";
 
+interface BlogNode {
+  frontmatter: {
+    title: string;
+    date: string;
+    slug: string;
+  };
+  id: string;
+  excerpt: string;
+}
 interface BlogData {
-  allFile: {
-    nodes: {
-      name: string;
-    }[];
+  allMdx: {
+    nodes: BlogNode[];
   };
 }
 
@@ -18,11 +25,15 @@ interface BlogPageProps {
 const BlogPage: React.FC<BlogPageProps> = ({ data }) => {
   return (
     <Layout pageTitle="My Blog Posts">
-      <ul>
-        {data.allFile.nodes.map((node) => (
-          <li key={node.name}>{node.name}</li>
-        ))}
-      </ul>
+      {data.allMdx.nodes.map((node) => {
+        return (
+          <article key={node.id}>
+            <h2>{node.frontmatter.title}</h2>
+            <p>Posted: {node.frontmatter.date}</p>
+            <p>{node.excerpt}</p>
+          </article>
+        );
+      })}
     </Layout>
   );
 };
@@ -33,9 +44,14 @@ export default BlogPage;
 
 export const query = graphql`
   query {
-    allFile {
+    allMdx(sort: { frontmatter: { date: DESC } }) {
       nodes {
-        name
+        frontmatter {
+          date(formatString: "MMMM D, YYYY")
+          title
+        }
+        id
+        excerpt
       }
     }
   }
